@@ -63,7 +63,7 @@ create_file_to_write
 
 @cars = Car.where(:year.gte => 1985, :year.lte => 2012).desc(:year)
 
-@products.each_with_index do |p, i|
+@products.each do |p|
 	puts product_id = p.product_id
 	
 	@cars.each_with_index do |car, j|
@@ -82,7 +82,7 @@ create_file_to_write
 		json_post = JSON.parse(html_stream)
 		vehicle = json_post["descriptions"]
 		if vehicle.nil?
-			puts "#{year}=#{i}=#{j}=null"  
+			puts "#{year}=#{j}=null"  
 			next
 		else
 			@file_to_write.puts "#{i}=#{j}\t#{vehicleID}\t#{vehicleCODE}\t#{product_id}\t#{p.part_no}\t#{maker}\t#{model}\t#{engine}\t#{year}"
@@ -96,7 +96,7 @@ create_file_to_write
 			
 	
 			p.applications.push(param)
-			puts "#{i}=#{j}\t#{vehicleID}\t#{vehicleCODE}\t#{product_id}\t#{p.part_no}\t#{maker}\t#{model}\t#{engine}\t#{year}"
+			puts "#{j}\t#{vehicleID}\t#{vehicleCODE}\t#{product_id}\t#{p.part_no}\t#{maker}\t#{model}\t#{engine}\t#{year}"
 			
 		end
 		
