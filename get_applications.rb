@@ -69,7 +69,7 @@ create_file_to_write
 	puts product_id = p.product_id
 	
 	@cars.each_with_index do |car, j|
-	
+		next if j < 5339
 		year = car.year
 		maker = car.maker
 		model = car.model
