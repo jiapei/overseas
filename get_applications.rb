@@ -59,11 +59,13 @@ end #create_file_to_write
 create_file_to_write
 @total_open = 0
 @first_time = Time.now.to_formatted_s(:number)
-@products = Aap.where(:applications => nil).desc(:created_at).limit(1) #(:applications.ne => nil)#.limit(1)
+@products = Aap.where(:product_id => "-49987467") #(:applications.ne => nil)#.limit(1)
 
 @cars = Car.where(:year.gte => 1985, :year.lte => 2012).desc(:year)
 
-@products.each do |p|
+@products.each_with_index do |p, i|
+	p.status = 2
+	p.save
 	puts product_id = p.product_id
 	
 	@cars.each_with_index do |car, j|
@@ -82,7 +84,7 @@ create_file_to_write
 		json_post = JSON.parse(html_stream)
 		vehicle = json_post["descriptions"]
 		if vehicle.nil?
-			puts "#{year}=#{j}=null"  
+			puts "#{year}=#{i}=#{j}=null"  
 			next
 		else
 			@file_to_write.puts "#{i}=#{j}\t#{vehicleID}\t#{vehicleCODE}\t#{product_id}\t#{p.part_no}\t#{maker}\t#{model}\t#{engine}\t#{year}"
@@ -96,11 +98,14 @@ create_file_to_write
 			
 	
 			p.applications.push(param)
-			puts "#{j}\t#{vehicleID}\t#{vehicleCODE}\t#{product_id}\t#{p.part_no}\t#{maker}\t#{model}\t#{engine}\t#{year}"
+			puts "#{i}=#{j}\t#{vehicleID}\t#{vehicleCODE}\t#{product_id}\t#{p.part_no}\t#{maker}\t#{model}\t#{engine}\t#{year}"
 			
 		end
 		
 	end
+	
+	p.status = 1
+	p.save
 end
 
 

@@ -6,8 +6,11 @@ class Aap
   field :title, 	:type => String
   field :url, 		:type => String
   field	:product_id,	:type => String
+  field :status
   
 
   embeds_many  :applications
   embeds_many  :parameters
+  
+  index :status => 1
 end
