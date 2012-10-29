@@ -16,4 +16,8 @@ tmp
 .yardoc
 _yardoc
 doc/
+<<<<<<< HEAD
 app*.txt
+aap-*.txt
+=======
+>>>>>>> 138c913792f496c5fb5c116ec702e0c2460eac76
