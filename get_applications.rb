@@ -59,7 +59,7 @@ end #create_file_to_write
 create_file_to_write
 @total_open = 0
 @first_time = Time.now.to_formatted_s(:number)
-@products = Aap.where(:applications => nil).limit(1) #(:applications.ne => nil)#.limit(1)
+@products = Aap.where(:applications => nil).desc(:created_at).limit(1) #(:applications.ne => nil)#.limit(1)
 
 @cars = Car.where(:year.gte => 1985, :year.lte => 2012).desc(:year)
 
