@@ -62,6 +62,7 @@ puts (Time.now - start_time).round(4)
 Aap.all.each do |aap|
 	@cars.each do |car|
 		@lid += 1
+		next if @lid < 2745079
 		
 		link = Link.new()
 		link.part_no = aap.part_no
@@ -93,7 +94,7 @@ Aap.all.each do |aap|
 	
 		link.save
 		if @lid%10000 == 0
-			puts @lid
+			puts @lid/10000
 			puts (Time.now - start_time).round(4)
 		end
 	end

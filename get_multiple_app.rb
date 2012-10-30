@@ -17,8 +17,6 @@ end
 ENV['MONGOID_ENV'] = 'aap'
 Mongoid.load!("config/mongoid.yml")
 
-
-
 class MultipleCrawler
 
 	class Crawler
@@ -54,13 +52,11 @@ class MultipleCrawler
 				encoding = encoding ? encoding[0].upcase : 'GB18030'
 				html = 'UTF-8'==encoding ? res.body : res.body.force_encoding('GB2312'==encoding || 'GBK'==encoding ? 'GB18030' : encoding).encode('UTF-8') 
 				doc = Nokogiri::HTML(html)
-				
-				json_post = JSON.parse(doc)
-				vehicle = json_post["descriptions"]
-				
+		
 				processed_time = (Time.now - start_time - opened_time).round(4) # 统计分析链接耗时, 1.8.7, ('%.4f' % float).to_f 替换 round(4)
 				@file_to_write.puts "#{opened_time}\t#{processed_time}\t#{doc.css('a[@href]').size}\t#{res.header['server']}"
-				[opened_time, processed_time, doc.css('a[@href]').size, res.header['server']]
+				
+				html
 			rescue =>e
 				e.message  
 			end
@@ -80,10 +76,10 @@ class MultipleCrawler
 	attr_accessor :user_agent, :redirect_limit
 	
 	
-def create_file_to_write
-	file_path = File.join('.', "application-#{Time.now.to_formatted_s(:number) }.txt")
-	@file_to_write = IoFactory.init(file_path)
-end #create_file_to_write
+	def create_file_to_write
+		file_path = File.join('.', "multiple-#{Time.now.to_formatted_s(:number) }.txt")
+		@file_to_write = IoFactory.init(file_path)
+	end #create_file_to_write
 
 
 	def init_beanstalk_jobs # 准备beanstalk任务
@@ -152,18 +148,11 @@ end #create_file_to_write
 		process_jobs
 	end
 end
-@products = Aap.where(:product_id => "-49957355") #"-49987467") #(:applications.ne => nil)#.limit(1)
-@cars = Car.where(:year.gte => 1985, :year.lte => 2012).desc(:year)
 
 websites = %w(
-http://www.51buy.com/ http://www.360buy.com/ http://www.tmall.com/ http://www.taobao.com/
-http://china.alibaba.com/ http://www.paipai.com/ http://shop.qq.com/ http://www.lightinthebox.com/
-http://www.amazon.cn/ http://www.newegg.com.cn/ http://www.vancl.com/ http://www.yihaodian.com/ 
-http://www.dangdang.com/ http://www.m18.com/ http://www.suning.com/ http://www.hstyle.com/
+http://shop.advanceautoparts.com/webapp/wcs/stores/servlet/AjaxManageMyGarageCmd?storeId=10151&catalogId=10051&langId=-1&vehicleID=407631&vehicleCODE=1441566&productId=54529&callingPage=CheckFitModal&saveVehicleFromCheckFit=false&actionCode=addVehicle&vehicleMake=Audi&vehicleModel=A4&vehicleEngine=2.0L+1984CC+L4+FI+Turbo+VIN&vehicleYear=2008
 )
-@products.each_with_index do |p, i|
 
-end
 
 beanstalk_jobs = [['192.168.2.14:11300'],'crawler-jobs']
 user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:13.0) Gecko/20100101 Firefox/13.0'
