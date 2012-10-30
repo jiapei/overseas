@@ -55,14 +55,17 @@ end #IoFactory
   end
   
 start_time = Time.now
-  
+link_amount = Link.all.count  
 @cars = @cars = Car.where(:year.gte => 1985).desc(:year)  
 puts (Time.now - start_time).round(4)
+puts "from #{link_amount}"
 @lid = 0
 Aap.all.each do |aap|
 	@cars.each do |car|
 		@lid += 1
-		next if @lid < 2745079
+		
+		next if @lid < link_amount
+		
 		
 		link = Link.new()
 		link.part_no = aap.part_no
