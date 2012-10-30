@@ -137,7 +137,7 @@ http://china.alibaba.com/ http://www.paipai.com/ http://shop.qq.com/ http://www.
 http://www.amazon.cn/ http://www.newegg.com.cn/ http://www.vancl.com/ http://www.yihaodian.com/ 
 http://www.dangdang.com/ http://www.m18.com/ http://www.suning.com/ http://www.hstyle.com/
 )
-beanstalk_jobs = [['localhost:11300'],'crawler-jobs']
+beanstalk_jobs = [['192.168.2.14:11300'],'crawler-jobs']
 user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:13.0) Gecko/20100101 Firefox/13.0'
 pm_max = 10
 
