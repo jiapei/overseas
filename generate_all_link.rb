@@ -64,7 +64,7 @@ Aap.all.each do |aap|
 	@cars.each do |car|
 		@lid += 1
 		
-		next if @lid < link_amount
+		next if @lid <= link_amount
 		
 		
 		link = Link.new()
