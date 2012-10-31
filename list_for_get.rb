@@ -1,7 +1,7 @@
-#!/usr/bin/env ruby
+ï»¿#!/usr/bin/env ruby
 #encoding: UTF-8
 
-# ×¥È¡Ã¿Ò»¸öÕ¾µãµÄÊ×Ò³Á´½ÓÊıÁ¿
+# æŠ“å–æ¯ä¸€ä¸ªç«™ç‚¹çš„é¦–é¡µé“¾æ¥æ•°é‡
 # require 'rubygems'			# 1.8.7
 require 'rubygems'
 require 'mongoid'
@@ -11,6 +11,23 @@ require 'net/http'
 require 'nokogiri'			# gem install nokogiri
 require 'forkmanager'		# gem install parallel-forkmanager
 require 'beanstalk-client'	# gem install beanstalk-client
+Dir.glob("#{File.dirname(__FILE__)}/app/models/*.rb") do |lib|
+  require lib
+end
+
+ENV['MONGOID_ENV'] = 'aap'
+Mongoid.load!("config/mongoid.yml")
+class IoFactory
+	attr_reader :file
+	def self.init file
+		@file = file
+		if @file.nil?
+			puts 'Can Not Init File To Write'
+			exit
+		end #if
+		File.open @file, 'a'
+	end     
+end #IoFactory
 
 class MultipleCrawler
 
@@ -36,18 +53,18 @@ class MultipleCrawler
 						http.read_timeout = @timeout
 						http.request(req)
 					end
-					if res.header['location'] # Óöµ½ÖØ¶¨Ïò£¬ÔòurlÉè¶¨Îªlocation£¬ÔÙ´Î×¥È¡
+					if res.header['location'] # é‡åˆ°é‡å®šå‘ï¼Œåˆ™urlè®¾å®šä¸ºlocationï¼Œå†æ¬¡æŠ“å–
 						url = res.header['location'] 
 						redirecting = true
 					end
 					redirect -= 1
 				end while redirecting and redirect>=0
-				opened_time = (Time.now - start_time).round(4) # Í³¼Æ´ò¿ªÍøÕ¾ºÄÊ±
+				opened_time = (Time.now - start_time).round(4) # ç»Ÿè®¡æ‰“å¼€ç½‘ç«™è€—æ—¶
 				encoding = res.body.scan(/<meta.+?charset=["'\s]*([\w-]+)/i)[0]
 				encoding = encoding ? encoding[0].upcase : 'GB18030'
 				html = 'UTF-8'==encoding ? res.body : res.body.force_encoding('GB2312'==encoding || 'GBK'==encoding ? 'GB18030' : encoding).encode('UTF-8') 
 				doc = Nokogiri::HTML(html)
-				processed_time = (Time.now - start_time - opened_time).round(4) # Í³¼Æ·ÖÎöÁ´½ÓºÄÊ±, 1.8.7, ('%.4f' % float).to_f Ìæ»» round(4)
+				processed_time = (Time.now - start_time - opened_time).round(4) # ç»Ÿè®¡åˆ†æé“¾æ¥è€—æ—¶, 1.8.7, ('%.4f' % float).to_f æ›¿æ¢ round(4)
 				[opened_time, processed_time, doc.css('a[@href]').size, res.header['server']]
 			rescue =>e
 				e.message  
@@ -56,20 +73,20 @@ class MultipleCrawler
 	end
 	
 	def initialize(websites, beanstalk_jobs, pm_max=1, user_agent='', redirect_limit=1)
-		@websites = websites  				# ÍøÖ·Êı×é 
-		@beanstalk_jobs = beanstalk_jobs	# beanstalk·şÎñÆ÷µØÖ·ºÍ¹ÜµÀ²ÎÊı
-		@pm_max = pm_max 					# ×î´ó²¢ĞĞÔËĞĞ½ø³ÌÊı
-		@user_agent = user_agent 			# user_agent Î±×°³Éä¯ÀÀÆ÷·ÃÎÊ
-		@redirect_limit = redirect_limit  	# ÔÊĞí×î´óÖØ¶¨Ïò´ÎÊı
+		@websites = websites  				# ç½‘å€æ•°ç»„ 
+		@beanstalk_jobs = beanstalk_jobs	# beanstalkæœåŠ¡å™¨åœ°å€å’Œç®¡é“å‚æ•°
+		@pm_max = pm_max 					# æœ€å¤§å¹¶è¡Œè¿è¡Œè¿›ç¨‹æ•°
+		@user_agent = user_agent 			# user_agent ä¼ªè£…æˆæµè§ˆå™¨è®¿é—®
+		@redirect_limit = redirect_limit  	# å…è®¸æœ€å¤§é‡å®šå‘æ¬¡æ•°
 		
-		@ipc_reader, @ipc_writer = IO.pipe # »º´æ½á¹ûµÄ ipc ¹ÜµÀ
+		@ipc_reader, @ipc_writer = IO.pipe # ç¼“å­˜ç»“æœçš„ ipc ç®¡é“
 	end
 	
 	attr_accessor :user_agent, :redirect_limit
 	
-	def init_beanstalk_jobs # ×¼±¸beanstalkÈÎÎñ
+	def init_beanstalk_jobs # å‡†å¤‡beanstalkä»»åŠ¡
 		beanstalk = Beanstalk::Pool.new(*@beanstalk_jobs)
-		#Çå¿ÕbeanstalkµÄ²ĞÁôÏûÏ¢¶ÓÁĞ
+		#æ¸…ç©ºbeanstalkçš„æ®‹ç•™æ¶ˆæ¯é˜Ÿåˆ—
 		begin
 			while job = beanstalk.reserve(0.1) 
 				job.delete
@@ -77,23 +94,23 @@ class MultipleCrawler
 		rescue Beanstalk::TimedOut
 			print "Beanstalk queues cleared!\n"
 		end
-		@websites.size.times{|i| beanstalk.put(i)} # ½«ËùÓĞµÄÈÎÎñÑ¹Õ»
+		@websites.size.times{|i| beanstalk.put(i)} # å°†æ‰€æœ‰çš„ä»»åŠ¡å‹æ ˆ
 		beanstalk.close
 		rescue => e 
 			puts e 
 			exit
 	end
 	
-	def process_jobs # ´¦ÀíÈÎÎñ
+	def process_jobs # å¤„ç†ä»»åŠ¡
 		start_time = Time.now
 		pm = Parallel::ForkManager.new(@pm_max)
 		@pm_max.times do |i| 
-			pm.start(i) and next # Æô¶¯ºó£¬Á¢¿Ì next ²»»áµÈ´ı½ø³ÌÖ´ĞĞÍê£¬ÕâÑù²Å¿ÉÒÔ²¢ĞĞÔËËã
+			pm.start(i) and next # å¯åŠ¨åï¼Œç«‹åˆ» next ä¸ä¼šç­‰å¾…è¿›ç¨‹æ‰§è¡Œå®Œï¼Œè¿™æ ·æ‰å¯ä»¥å¹¶è¡Œè¿ç®—
 			beanstalk = Beanstalk::Pool.new(*@beanstalk_jobs)
-			@ipc_reader.close	 # ¹Ø±Õ¶ÁÈ¡¹ÜµÀ£¬×Ó½ø³ÌÖ»·µ»ØÊı¾İ
+			@ipc_reader.close	 # å…³é—­è¯»å–ç®¡é“ï¼Œå­è¿›ç¨‹åªè¿”å›æ•°æ®
 			loop{ 
 				begin
-					job = beanstalk.reserve(0.1) # ¼ì²â³¬Ê±Îª0.1Ãë£¬ÒòÎªÈÎÎñÒÔÇ°ÌáÇ°Ñ¹Õ»
+					job = beanstalk.reserve(0.1) # æ£€æµ‹è¶…æ—¶ä¸º0.1ç§’ï¼Œå› ä¸ºä»»åŠ¡ä»¥å‰æå‰å‹æ ˆ
 					index = job.body
 					job.delete
 					website = @websites[index.to_i]
@@ -108,17 +125,17 @@ class MultipleCrawler
 		end		
 		@ipc_writer.close
 		begin 
-			pm.wait_all_children		# µÈ´ıËùÓĞ×Ó½ø³Ì´¦ÀíÍê±Ï 
-		rescue SystemExit, Interrupt	# Óöµ½ÖĞ¶Ï£¬´òÓ¡ÏûÏ¢
+			pm.wait_all_children		# ç­‰å¾…æ‰€æœ‰å­è¿›ç¨‹å¤„ç†å®Œæ¯• 
+		rescue SystemExit, Interrupt	# é‡åˆ°ä¸­æ–­ï¼Œæ‰“å°æ¶ˆæ¯
 			print "Interrupt wait all children!\n"
 		ensure
 			results = read_results
-			ap results, :indent => -4 , :index=>false	# ´òÓ¡´¦Àí½á¹û
+			ap results, :indent => -4 , :index=>false	# æ‰“å°å¤„ç†ç»“æœ
 			print "Process end, total: #{@websites.size}, crawled: #{results.size}, time: #{'%.4f' % (Time.now - start_time)}s.\n"
 		end
 	end
 	
-	def read_results # Í¨¹ı¹ÜµÀ¶ÁÈ¡×Ó½ø³Ì×¥È¡·µ»ØµÄÊı¾İ
+	def read_results # é€šè¿‡ç®¡é“è¯»å–å­è¿›ç¨‹æŠ“å–è¿”å›çš„æ•°æ®
 		results = {}
 		while result = @ipc_reader.gets
 			results.merge! JSON.parse(result)
@@ -127,7 +144,7 @@ class MultipleCrawler
 		results
 	end
 	
-	def run # ÔËĞĞÈë¿Ú
+	def run # è¿è¡Œå…¥å£
 		init_beanstalk_jobs
 		process_jobs
 	end
