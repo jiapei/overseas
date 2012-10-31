@@ -105,7 +105,8 @@ class MultipleCrawler
 			}
 			@ipc_writer.close
 			pm.finish(0)	
-	end		@ipc_writer.close
+		end		
+		@ipc_writer.close
 		begin 
 			pm.wait_all_children		# 等待所有子进程处理完毕 
 		rescue SystemExit, Interrupt	# 遇到中断，打印消息
