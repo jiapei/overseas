@@ -47,7 +47,7 @@ def create_file_to_write
 end #create_file_to_write
 
 create_file_to_write
-@first_time = Time.now.to_formatted_s(:number)
+first_time = Time.now
 
 links = Link.where( :status => 0, :lid.lte => 1000)
 links.each do |link|
@@ -72,6 +72,5 @@ links.each do |link|
 	
 end
 
-@last_time = Time.now.to_formatted_s(:number)
 
-puts "from: #{@first_time} - to: #{@last_time}"
+puts Time.now - first_time.round(4)
