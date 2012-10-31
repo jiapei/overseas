@@ -28,7 +28,6 @@ class IoFactory
 		File.open @file, 'a'
 	end     
 end #IoFactory
-
 class MultipleCrawler
 
 	class Crawler

@@ -12,6 +12,13 @@ aap:
       database: aap
       hosts:
         - 127.0.0.1:27017		
+aap-data:
+  sessions:
+    default:
+      identity_map_enabled: true
+      database: aap
+      hosts:
+        - 192.168.2.14:27017		
 localcar:
   sessions:
     default:
