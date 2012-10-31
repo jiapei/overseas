@@ -125,7 +125,7 @@ class MultipleCrawler
 					job.delete
 					website = @websites[index.to_i]
 					result = Crawler.new(@user_agent).fetch(website)
-					pp result
+					ap result
 					@ipc_writer.puts( ({website=>result}).to_json )
 				rescue Beanstalk::DeadlineSoonError, Beanstalk::TimedOut, SystemExit, Interrupt
 					break
