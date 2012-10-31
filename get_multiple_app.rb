@@ -5,7 +5,7 @@
 # require 'rubygems'			# 1.8.7
 require 'rubygems'
 require 'mongoid'
-require 'ap'				# gem install awesome_print
+require 'pp'				
 require 'json'
 require 'open-uri'
 require 'nokogiri'			# gem install nokogiri
@@ -59,14 +59,33 @@ class MultipleCrawler
 			print "Pid:#{Process.pid}, fetch: #{website}\n"
 			url = website
 			url = URI.parse(URI.encode(url))
-			html_stream = safe_open(url , retries = 3, sleep_time = 0.42, @user_agent)#headers = {})
-	
+			html_stream = safe_open(url , retries = 3, sleep_time = 0.42, headers = {})
+			puts "fetch ok"
+
+			json_post = JSON.parse(html_stream)
+			puts json_post
+			vehicle = json_post["descriptions"]
+			puts " get json data"
+
+			@my_link = Link.where(:lid => 1 ).first
+			@my_link.status = 1
+			@my_link.result = result
+
+			if vehicle.nil?
+				@my_link.pipei = 0
+			elsif
+				@my_link.pipei = 1
+			end
+			@my_link.save
+			puts "#{@my_link.lid}"
+			@file_to_write.puts "#{@my_link.lid}\t#{@my_link.vehicle_id}\t#{@my_link.product_id}\t#{@my_link.part_no}\t#{@my_link.maker}\t#{@my_link.model}\t#{@my_link.engine}\t#{@my_link.year}"
+
+
 		end
 	end
 	
 	def initialize(links, beanstalk_jobs, pm_max=1, user_agent='', redirect_limit=1)
 		@links = links  				# 网址数组 
-puts @links.length		
 		@beanstalk_jobs = beanstalk_jobs	# beanstalk服务器地址和管道参数
 		@pm_max = pm_max 					# 最大并行运行进程数
 		@user_agent = user_agent 			# user_agent 伪装成浏览器访问
@@ -94,8 +113,11 @@ puts @links.length
 		rescue Beanstalk::TimedOut
 			print "Beanstalk queues cleared!\n"
 		end
-		puts "all in beanstalk's jobs"
+		puts "begin in beanstalk's jobs"
 		@links.size.times{|i| beanstalk.put(i)} # 将所有的任务压栈
+		puts "end all in beanstalk's jobs"
+		puts "links.size: #{@links.size}"
+	
 		beanstalk.close
 		rescue => e 
 			puts e 
@@ -103,7 +125,7 @@ puts @links.length
 	end
 	
 	def process_jobs # 处理任务
-		start_time = Time.now
+		puts	start_time = Time.now
 		pm = Parallel::ForkManager.new(@pm_max)
 		@pm_max.times do |i| 
 			pm.start(i) and next # 启动后，立刻 next 不会等待进程执行完，这样才可以并行运算
@@ -113,14 +135,19 @@ puts @links.length
 					job = beanstalk.reserve(0.1) # 检测超时为0.1秒，因为任务以前提前压栈
 					index = job.body
 					job.delete
-					website = @links[index.to_i]#["app_url"]
-			puts @website
-					result = Crawler.new(@user_agent).fetch(website)
+					website = @links[index.to_i].app_url
+			puts "in process_jobs:#{website}"
+
+=begin					result = Crawler.new(@user_agent).fetch(website)
 
 					json_post = JSON.parse(result)
+					puts json_post
 					vehicle = json_post["descriptions"]
+					puts " get json data"
+					puts index 
 
-					@my_link = Link.find(@links[index.to_i][id])
+					@my_link = Link.where(:lid => 1 ).first
+puts "get my_link"
 					@my_link.status = 1
 					@my_link.result = result
 
@@ -132,8 +159,9 @@ puts @links.length
 					@my_link.save
 					puts "#{@my_link.lid}"
 					@file_to_write.puts "#{@my_link.lid}\t#{@my_link.vehicle_id}\t#{@my_link.product_id}\t#{@my_link.part_no}\t#{@my_link.maker}\t#{@my_link.model}\t#{@my_link.engine}\t#{@my_link.year}"
-
+=end
 				rescue Beanstalk::DeadlineSoonError, Beanstalk::TimedOut, SystemExit, Interrupt
+					puts "error"
 					break
 				end
 			}
@@ -163,7 +191,7 @@ puts @links.length
 		process_jobs
 	end
 end
-links = Link.asc(:lid).limit(100).where(:status => 0).map(&:status)
+links = Link.where( :status => 0, :lid.lte => 100)
 
 #links = Link.limit(100).where(:status => 0)
 puts "get limit #{links.count} items."
