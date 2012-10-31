@@ -50,14 +50,14 @@ create_file_to_write
 first_time = Time.now
 
 
-if $*[0]==nil
-	abort "用法示例：ruby #$0 开始数　结束数　存放的目录 EX:如ruby #$0 20000  " 
+if $*[0]==nil or $*[1]==nil 
+  abort "ruby #$0 10000 200000  "
 end
+min_num = $*[0]
+max_num = $*[1]
+puts max_num
 
-max_num = $*[0].to_i
-first_time = Time.now
-
-links = Link.where( :status => 0, :lid.lte => max_num)
+links = Link.where( :status => 0, :lid.gte => min_num.to_i, :lid. lte => max_num.to_i)
 
 threads = []
 links.each do |link|
