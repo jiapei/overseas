@@ -61,9 +61,8 @@ class MultipleCrawler
 					redirect -= 1
 				end while redirecting and redirect>=0
 				opened_time = (Time.now - start_time).round(4) # 统计打开网站耗时
-				encoding = res.body.scan(/<meta.+?charset=["'\s]*([\w-]+)/i)[0]
-				encoding = encoding ? encoding[0].upcase : 'GB18030'
-				html = 'UTF-8'==encoding ? res.body : res.body.force_encoding('GB2312'==encoding || 'GBK'==encoding ? 'GB18030' : encoding).encode('UTF-8') 
+
+				html =  res 
 				doc = Nokogiri::HTML(html)
 		
 				processed_time = (Time.now - start_time - opened_time).round(4) # 统计分析链接耗时, 1.8.7, ('%.4f' % float).to_f 替换 round(4)
@@ -126,6 +125,7 @@ class MultipleCrawler
 					job.delete
 					website = @websites[index.to_i]
 					result = Crawler.new(@user_agent).fetch(website)
+					pp result
 					@ipc_writer.puts( ({website=>result}).to_json )
 				rescue Beanstalk::DeadlineSoonError, Beanstalk::TimedOut, SystemExit, Interrupt
 					break
