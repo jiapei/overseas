@@ -18,6 +18,17 @@ end
 
 ENV['MONGOID_ENV'] = 'aap'
 Mongoid.load!("config/mongoid.yml")
+class IoFactory
+	attr_reader :file
+	def self.init file
+		@file = file
+		if @file.nil?
+			puts 'Can Not Init File To Write'
+			exit
+		end #if
+		File.open @file, 'a'
+	end     
+end #IoFactory
 
 class MultipleCrawler
 
