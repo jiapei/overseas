@@ -49,20 +49,16 @@ end #create_file_to_write
 create_file_to_write
 first_time = Time.now
 
-if $*[0]==nil or $*[1]==nil 
-  abort "ruby #$0 10000 200000  "
-end
-min_num = $*[0]
-max_num = $*[1]
-puts max_num
+max_num = Link.where( :status => 0).count + 100000
 
-links = Link.where( :status => 0,  :lid.lte => max_num.to_i)
+links = Link.where( :status => 0,  :lid.lte => 15000)
 puts links.count
 
 links.each do |link|
 	url = link.app_url
 	url = URI.parse(URI.encode(url))
 	html_stream = safe_open(url , retries = 3, sleep_time = 0.2, headers = {})
+	next if html_stream.nil?
 
 	json_post = JSON.parse(html_stream)
 	vehicle = json_post["descriptions"]	
