@@ -57,7 +57,8 @@ min_num = $*[0]
 max_num = $*[1]
 puts max_num
 
-links = Link.where( :status => 0, :lid.gte => min_num.to_i, :lid. lte => max_num.to_i)
+links = Link.where( :status => 0, :lid.gte => min_num.to_i, :lid.lte => max_num.to_i)
+puts links.count
 
 threads = []
 links.each do |link|

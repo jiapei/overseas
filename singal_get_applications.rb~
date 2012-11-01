@@ -64,7 +64,6 @@ links.each do |link|
 	url = URI.parse(URI.encode(url))
 	html_stream = safe_open(url , retries = 3, sleep_time = 0.2, headers = {})
 
-	next if html_stream.nil?
 	json_post = JSON.parse(html_stream)
 	vehicle = json_post["descriptions"]	
 			link.status = 1
