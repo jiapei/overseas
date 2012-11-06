@@ -56,11 +56,8 @@ min_num = $*[0]
 max_num = $*[1]
 puts max_num
 
-<<<<<<< HEAD
-links = Link.where( :status => 0,  :lid.lte => max_num.to_i)
-=======
-links = Link.where( :status => 0, :lid.gte => min_num.to_i, :lid.lte => max_num.to_i)
->>>>>>> 6ddc7a2f43e055b3a192e5be0f8d77ccf1c11ebf
+links = Link.where( :status => 0,  :lid.lte => 40000)# max_num.to_i)
+#links = Link.where( :status => 0, :lid.gte => min_num.to_i, :lid.lte => max_num.to_i)
 puts links.count
 
 links.each do |link|
