@@ -56,16 +56,14 @@ end #IoFactory
   
 
 def create_file_to_write
-	file_path = File.join('.', "aap-#{Time.now.to_formatted_s(:number) }.txt")
+	file_path = File.join('.', "pipei-#{Time.now.to_formatted_s(:number) }.txt")
 	@file_to_write = IoFactory.init(file_path)
 end #create_file_to_write
 
 create_file_to_write
-links = Link.where(:part_no => /YH140484/)
-puts links.count()
+pipeis = Pipei.all
+puts pipeis.count()
 
-links.each do |link|
-	link.status = 1
-	link.save
-	puts link.part_no
+pipeis.each do |pipei|
+	@file_to_write.puts pipei.result
 end

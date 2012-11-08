@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env ruby
+#!/usr/bin/env ruby
 #encoding: UTF-8
 
 # 抓取每一个站点的首页链接数量
@@ -10,6 +10,7 @@ require 'json'
 require 'open-uri'
 require 'nokogiri'			# gem install nokogiri
 require 'forkmanager'		# gem install parallel-forkmanager
+require 'ap'
 require 'beanstalk-client'	# gem install beanstalk-client
 
 Dir.glob("#{File.dirname(__FILE__)}/app/models/*.rb") do |lib|
@@ -92,33 +93,26 @@ class MultipleCrawler
 	
 		beanstalk.close
 		rescue => e 
-			puts e 
-			exit
+		puts e 
+		exit
 	end
 	
 	def process_jobs # 处理任务
 		puts	start_time = Time.now
-		pm = Parallel::ForkManager.new(@pm_max)
-		@pm_max.times do |i| 
-			pm.start(i) and next # 启动后，立刻 next 不会等待进程执行完，这样才可以并行运算
 			beanstalk = Beanstalk::Pool.new(*@beanstalk_jobs)
-			loop{ 
+			@ipc_reader.close
+loop{
 				begin
 					job = beanstalk.reserve(0.1) # 检测超时为0.1秒，因为任务以前提前压栈
 					index = job.body
 					job.delete
 					website = @links[index.to_i].app_url
-			puts "in process_jobs:#{website}"
-
 					result = Crawler.new(@user_agent).fetch(website)
 
 					json_post = JSON.parse(result)
-					puts json_post
 					vehicle = json_post["descriptions"]
-					puts " get json data"
-					puts index 
 
-					@my_link = Link.where(:lid => 1 ).first
+					@my_link = @links[index.to_i] #Link.where(:lid => 1 ).first
 					@my_link.status = 1
 					@my_link.result = result
 
@@ -128,23 +122,18 @@ class MultipleCrawler
 						@my_link.pipei = 1
 					end
 					@my_link.save
-					puts "#{@my_link.lid}"
-					@file_to_write.puts "#{@my_link.lid}\t#{@my_link.vehicle_id}\t#{@my_link.product_id}\t#{@my_link.part_no}\t#{@my_link.maker}\t#{@my_link.model}\t#{@my_link.engine}\t#{@my_link.year}"
+#					@ipc_writer.
+puts "#{@my_link.lid}\t#{@my_link.vehicle_id}\t#{@my_link.product_id}\t#{@my_link.part_no}\t#{@my_link.maker}\t#{@my_link.model}\t#{@my_link.engine}\t#{@my_link.year}"
 
 				rescue Beanstalk::DeadlineSoonError, Beanstalk::TimedOut, SystemExit, Interrupt
 					puts "error"
 					break
 				end
-			}
-			pm.finish(0)	
-		end
-		begin 
-			pm.wait_all_children		# 等待所有子进程处理完毕 
-		rescue SystemExit, Interrupt	# 遇到中断，打印消息
-			print "Interrupt wait all children!\n"
-		ensure
-		#	print "Process end, total: #{@websites.size}, crawled: #{results.size}, time: #{'%.4f' % (Time.now - start_time)}s.\n"
-		end
+}
+			@ipc_writer.close
+			results = read_results
+			ap results, :indent => -4 , :index => false
+			print "Process end, total: #{@links.size}, crawled: #{results.size}, time: #{'%.4f' % (Time.now - start_time)}s.\n"
 	end
 	
 	def read_results # 通过管道读取子进程抓取返回的数据
@@ -163,7 +152,7 @@ class MultipleCrawler
 	end
 end
 #links = Link.where( :status => 0, :lid.lte => 100)
-links = Link.where( :product_id => '-49957383', :year => 2013)
+links = Link.where( :product_id => '-49957383', :year => 2013, :status => 0)
 
 #links = Link.limit(100).where(:status => 0)
 puts "get limit #{links.count} items."
@@ -174,3 +163,4 @@ user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:13.0) Gecko/201001
 pm_max = 10
 
 MultipleCrawler.new(links, beanstalk_jobs, pm_max, user_agent).run
+

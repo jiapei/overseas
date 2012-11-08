@@ -1,20 +1,21 @@
-class Pipei
+ï»¿class Pipei
   include Mongoid::Document
   include Mongoid::Timestamps
   
   field :lid
 
-  field	:product_id,	:type => String #²úÆ·ÍøÕ¾ĞòÁĞºÅ
-  field :vehicle_id,	:type => String #Æû³µ±àºÅ
+  field	:product_id,	:type => String #äº§å“ç½‘ç«™åºåˆ—å·
+  field :vehicle_id,	:type => String #æ±½è½¦ç¼–å·
 
   
-  field :status							#ÊÇ·ñ²É¼¯ 0¡¢1
-  field :result							#²É¼¯½á¹û
-  field :pipei							#ÊÇ·ñÆ¥Åä 0¡¢1
+  field :status							#æ˜¯å¦é‡‡é›† 0ã€1
+  field :result							#é‡‡é›†ç»“æœ
+  field :pipei							#æ˜¯å¦åŒ¹é… 0ã€1
   
-  field :app_url,		:type => String #Æ¥ÅäÍøÖ·				
+  field :app_url,		:type => String #åŒ¹é…ç½‘å€				
 
   index :status => 1
   index :pipei => 1
   index :lid => 1
 end
+
