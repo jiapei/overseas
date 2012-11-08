@@ -91,18 +91,26 @@ class MultipleCrawler
 		process_jobs
 	end
 end
-#links = Link.where( :status => 0, :lid.lte => 100)
-links = Link.where( :product_id => '-49957383', :year.gte => 1985)
-#links = Link.limit(100).where(:status => 0)
-puts "get limit #{links.count} items."
 
-mylinks = links.map {|link| link.app_url}
-mylids = links.map {|link| link.lid}
+def create_file_to_wtire
+	file_path = File.join('.', "from-end-to-fetch-log.txt")
+	@file_to_write = IOFactory.init(file_path)
+end
+create_file_to_write
+@aaps = Aap.all.desc(:product_id)
+@aaps.each_with_index do |aap, i|
+	
+	links = Link.where( :product_id => aap.product_id, :year.gte => 1985)
+	
+	puts "get limit #{links.count} items."
 
-break
+	mylinks = links.map {|link| link.app_url}
+	mylids = links.map {|link| link.lid}
+
+	break
 
 
-user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:13.0) Gecko/20100101 Firefox/13.0'
-pm_max = 10
+	user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:13.0) Gecko/20100101 Firefox/13.0'
+	pm_max = 10
 
-MultipleCrawler.new(mylinks, mylids, retries = 3,pm_max, sleep_time = 0.2, user_agent).run
+	MultipleCrawler.new(mylinks, mylids, retries = 3,pm_max, sleep_time = 0.2, user_agent).run
