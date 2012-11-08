@@ -1,8 +1,5 @@
 #!/usr/bin/env ruby
 #encoding: UTF-8
-
-# 抓取每一个站点的首页链接数量
-# require 'rubygems'			# 1.8.7
 require 'rubygems'
 require 'mongoid'
 require 'pp'				
