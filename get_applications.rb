@@ -83,24 +83,24 @@ create_file_to_write
 		#puts html_stream
 		json_post = JSON.parse(html_stream)
 		vehicle = json_post["descriptions"]
-		if vehicle.nil?
-			puts "#{year}=#{i}=#{j}=null"  
-			next
-		else
-			@file_to_write.puts "#{i}=#{j}\t#{vehicleID}\t#{vehicleCODE}\t#{product_id}\t#{p.part_no}\t#{maker}\t#{model}\t#{engine}\t#{year}"
-			param = Application.new() #find_or_create_by(:vehicle_id => car.vehicle_id)
-			param.year = car.year
-			param.maker = car.maker
-			param.model = car.model
-			param.engine = car.engine
-			param.vehicle_id = car.vehicle_id
-			param.vehicle_code = car.vehicle_code
-			
+if vehicle.nil?
+	puts "#{year}=#{i}=#{j}=null"  
+	next
+else
+	@file_to_write.puts "#{i}=#{j}\t#{vehicleID}\t#{vehicleCODE}\t#{product_id}\t#{p.part_no}\t#{maker}\t#{model}\t#{engine}\t#{year}"
+	param = Application.new() #find_or_create_by(:vehicle_id => car.vehicle_id)
+	param.year = car.year
+	param.maker = car.maker
+	param.model = car.model
+	param.engine = car.engine
+	param.vehicle_id = car.vehicle_id
+	param.vehicle_code = car.vehicle_code
 	
-			p.applications.push(param)
-			puts "#{i}=#{j}\t#{vehicleID}\t#{vehicleCODE}\t#{product_id}\t#{p.part_no}\t#{maker}\t#{model}\t#{engine}\t#{year}"
-			
-		end
+
+	p.applications.push(param)
+	puts "#{i}=#{j}\t#{vehicleID}\t#{vehicleCODE}\t#{product_id}\t#{p.part_no}\t#{maker}\t#{model}\t#{engine}\t#{year}"
+	
+end
 		
 	end
 	

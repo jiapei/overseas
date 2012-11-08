@@ -21,6 +21,7 @@ class Link
   
   field :app_url,		:type => String #Æ¥ÅäÍøÖ·				
   
+  index :product_id => 1
   index :status => 1
   index :pipei => 1
   index :year => 1

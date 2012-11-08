@@ -11,7 +11,7 @@ Dir.glob("#{File.dirname(__FILE__)}/app/models/*.rb") do |lib|
   require lib
 end
 
-ENV['MONGOID_ENV'] = 'aap'
+ENV['MONGOID_ENV'] = 'aap-data'
 
 Mongoid.load!("config/mongoid.yml")
 class String
@@ -56,7 +56,7 @@ end #IoFactory
   
 
 def create_file_to_write
-	file_path = File.join('.', "aap-#{Time.now.to_formatted_s(:number) }.txt")
+	file_path = File.join('.', "pipei-#{Time.now.to_formatted_s(:number) }.txt")
 	@file_to_write = IoFactory.init(file_path)
 end #create_file_to_write
 
@@ -65,9 +65,15 @@ create_file_to_write
 names = []
 @pipeis.each do |pipei|
 	puts pipei.lid
-	names << aap.product_id
+	names << pipei.lid
 end
 names.uniq!
 puts @pipeis.length
 puts names.length
-@file_to_write.puts names
+#@file_to_write.puts names
+
+
+names.each do |lid|
+	@link = Link.find_by(:lid => lid)
+	@file_to_write.puts "#{@link.lid}\t#{@link.product_id}\t#{@link.part_no}\t#{@link.title}\t#{@link.year}\t#{@link.maker}\t#{@link.model}\t#{@link.engine}"
+end
