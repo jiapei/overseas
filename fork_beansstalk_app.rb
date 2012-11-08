@@ -182,10 +182,11 @@ create_file_to_write
 @aaps.each_with_index do |aap, i|
 
 #break if (aap.product_id.eql?("-49812089"))  #2006
-next if i < 3
+next if i < 60 
 	2012.downto(1985) do |year|
 		@file_to_write.puts("#{i}\t#{aap.product_id}\t#{year}\t#{Time.now}")
-next if (i ==3 && year > 2006)
+		@file_to_write.flush
+next if (i == 60 && year > 1998)
 		links = Link.where( :product_id => aap.product_id, :year => year)
 		puts "get limit #{links.count} items."
 		mylinks = links.map  {|link| link.app_url }
